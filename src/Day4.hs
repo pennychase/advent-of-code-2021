@@ -1,5 +1,3 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module Day4 where
 
 import Control.Lens
@@ -66,7 +64,7 @@ hasBingo bingo =
 
 score :: Int -> Bingo -> Int 
 score n bingo =
-    n * (sum $ map fst $ filter (not . snd) zipped)
+    n * sum (map fst $ filter (not . snd) zipped)
     where
         zipped = zip (concat . board $ values bingo) (concat . board $ marked bingo)
 
@@ -88,10 +86,10 @@ game2 (n:ns) bs =
     let newBs = map (updateBingo n) bs
     in case elemIndices True (map hasBingo newBs) of
         [] -> game2 ns newBs
-        is -> (map (sc newBs) is) ++ (game2 ns (del is newBs))
+        is -> map (sc newBs) is ++ game2 ns (del is newBs)
     where
         sc nbs i = score n (nbs !! i)
-        del is nbs= snd . unzip $ filter (not . (`elem` is) . fst) (zip [0 ..] nbs)
+        del is nbs = snd . unzip $ filter (not . (`elem` is) . fst) (zip [0 ..] nbs)
 
 part1 :: Game -> Maybe Int 
 part1 (Game draws boards) = 
@@ -115,8 +113,7 @@ lexeme = L.lexeme hspace
 -- Parser in Day2 only removed trailing spaces
 intParser :: Parser Int
 intParser = do
-    num <- lexeme L.decimal
-    pure num
+    lexeme L.decimal
 
 rowParser :: Parser [Int]
 rowParser = do
