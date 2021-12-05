@@ -12,7 +12,6 @@ import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
 import Data.Void
-import GHC.Conc (numSparks)
 
 newtype Board a = Board { board :: [[a]] }
     deriving Show
