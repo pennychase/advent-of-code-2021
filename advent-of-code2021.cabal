@@ -24,7 +24,7 @@ extra-source-files:
     README.md
 
 library
-    exposed-modules:  Day1
+    exposed-modules:  Day1, Day5
 
     -- Modules included in this library but not exported.
     -- other-modules:
@@ -33,6 +33,7 @@ library
     -- other-extensions:
     build-depends:
         base ^>=4.14.3.0,
+        containers,
         fmt,
         lens,
         megaparsec,
