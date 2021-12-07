@@ -39,13 +39,13 @@ pointsInCommon linesPts =
         -- all the points appearing in at least one line
         allPts = S.elems $ foldr S.union S.empty linesPts 
         -- for each point, find the lines it's in, and count how many
-        overlaps = map countTrue $ map (\p -> map (S.member p) linesPts) allPts
+        overlaps = map (countTrue . (\p -> map (S.member p) linesPts)) allPts
 
 part1 :: [Line] -> Int
 part1 lines =
     pointsInCommon linesPts
     where
-        linesPts = map pointsInLine $ (filter horizP lines) <> (filter vertP lines)
+        linesPts = map pointsInLine $ filter horizP lines <> filter vertP lines
 
 part2 :: [Line] -> Int
 part2 lines = pointsInCommon (map pointsInLine lines)
