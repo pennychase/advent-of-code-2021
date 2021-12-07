@@ -24,7 +24,7 @@ extra-source-files:
     README.md
 
 library
-    exposed-modules:  Parser, Day1, Day5, Day6
+    exposed-modules:  Parser, Day1, Day5, Day6, Day7
     ghc-options: -O2 -threaded
 
     -- Modules included in this library but not exported.
