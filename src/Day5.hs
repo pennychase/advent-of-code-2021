@@ -1,12 +1,13 @@
 module Day5 where
 
 import Data.List
-import Data.Set (Set)
-import qualified Data.Set as S
+import Data.MultiSet (MultiSet)
+import qualified Data.MultiSet as MS
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 import Data.Void
+import qualified Control.Lens as MS
 
 type Point = (Int, Int)
 type Line = (Point, Point)
@@ -17,35 +18,38 @@ horizP (p1, p2) = snd p1 == snd p2
 vertP :: Line -> Bool 
 vertP (p1, p2) = fst p1 == fst p2
 
-pointsInLine :: Line -> Set Point
+pointsInLine :: Line -> MultiSet Point
 pointsInLine line@(p1, p2) 
-    | horizP line = S.fromList $ zip (genCoord (fst p1) (fst p2)) (cycle [snd p1])
-    | vertP line = S.fromList $  zip (cycle [fst p1]) (genCoord (snd p1) (snd p2))
-    | otherwise = S.fromList $ zip (genCoord (fst p1) (fst p2)) (genCoord (snd p1) (snd p2))
+    | horizP line = MS.fromList $ zip (genCoord (fst p1) (fst p2)) (cycle [snd p1])
+    | vertP line = MS.fromList $ zip (cycle [fst p1]) (genCoord (snd p1) (snd p2))
+    | otherwise = MS.fromList $ zip (genCoord (fst p1) (fst p2)) (genCoord (snd p1) (snd p2))
     where
         genCoord c1 c2 
             | c1 < c2 = [c1, c1 + 1 .. c2]
             | c1 >= c2 = [c1, c1 - 1 .. c2]
 
-
-countTrue :: Enum a => [a] -> Int
-countTrue list = sum $ map fromEnum list   
-
-pointsInCommon :: [Set Point] -> Int
-pointsInCommon linesPts =
-    -- count how many points occur in 2 or more lines
-    length $ filter (>= 2) overlaps
+pointsInCommon :: [MultiSet Point] -> Int
+pointsInCommon lns =
+    MS.distinctSize $ MS.filter (\pt -> (MS.occur pt points) >= 2) points
     where
-        -- all the points appearing in at least one line
-        allPts = S.elems $ foldr S.union S.empty linesPts 
-        -- for each point, find the lines it's in, and count how many
-        overlaps = map (countTrue . (\p -> map (S.member p) linesPts)) allPts
+        points = MS.unions lns
+
+-- countTrue :: Enum a => [a] -> Int
+-- countTrue list = sum $ map fromEnum list   
+
+-- pointsInCommon :: [Set Point] -> Int
+-- pointsInCommon linesPts =
+--     -- count how many points occur in 2 or more lines
+--     length $ filter (>= 2) overlaps
+--     where
+--         -- all the points appearing in at least one line
+--         allPts = S.elems $ foldr S.union S.empty linesPts 
+--         -- for each point, find the lines it's in, and count how many
+--         overlaps = map (countTrue . (\p -> map (S.member p) linesPts)) allPts
 
 part1 :: [Line] -> Int
 part1 lines =
-    pointsInCommon linesPts
-    where
-        linesPts = map pointsInLine $ filter horizP lines <> filter vertP lines
+    pointsInCommon $ map pointsInLine $ filter horizP lines <> filter vertP lines
 
 part2 :: [Line] -> Int
 part2 lines = pointsInCommon (map pointsInLine lines)
