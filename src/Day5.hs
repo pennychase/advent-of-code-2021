@@ -34,19 +34,6 @@ pointsInCommon lns =
     where
         points = MS.unions lns
 
--- countTrue :: Enum a => [a] -> Int
--- countTrue list = sum $ map fromEnum list   
-
--- pointsInCommon :: [Set Point] -> Int
--- pointsInCommon linesPts =
---     -- count how many points occur in 2 or more lines
---     length $ filter (>= 2) overlaps
---     where
---         -- all the points appearing in at least one line
---         allPts = S.elems $ foldr S.union S.empty linesPts 
---         -- for each point, find the lines it's in, and count how many
---         overlaps = map (countTrue . (\p -> map (S.member p) linesPts)) allPts
-
 part1 :: [Line] -> Int
 part1 lines =
     pointsInCommon $ map pointsInLine $ filter horizP lines <> filter vertP lines
