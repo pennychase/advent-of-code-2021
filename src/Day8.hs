@@ -2,13 +2,40 @@
 
 module Day8 where
 
+import Data.Bits
 import Data.List
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
+import Data.Fixed (E0)
+
+data Segment = Seg6 | Seg5 | Seg4 | Seg3 | Seg2 | Seg1 | Seg0
+    deriving (Show, Eq, Ord, Enum)
+
+segToBit :: Segment -> Int
+segToBit = fromEnum
+
+segsToDigit :: [Segment] -> Maybe Int 
+segsToDigit segs = 
+    case foldl' setBit (0::Int) (map segToBit segs) of
+        0x7E -> Just 0
+        0x30 -> Just 1
+        0x6D -> Just 2
+        0x79 -> Just 3
+        0x33 -> Just 4
+        0x5B -> Just 5
+        0x5F -> Just 6
+        0x70 -> Just 7
+        0x7f -> Just 8
+        0x7B -> Just 9
+        _    -> Nothing
+
+
+
+
+
 
 type Observation = ([Text], [Text])
-
 
 getOutputSegLen :: Observation -> [Int]
 getOutputSegLen  obs = map T.length $ snd obs
