@@ -19,8 +19,18 @@ intParser = lexeme L.decimal
 csvParser :: Parser [Int]
 csvParser = do
     ints <- sepEndBy1 intParser (char ',') 
-    eol
     pure ints
+
+pairParser :: Parser (Int, Int)
+pairParser = do
+    i <- intParser
+    char ','
+    j <- intParser
+    pure (i,j)
+ 
+
+lineParser :: Parser a -> Parser [a]
+lineParser parser = sepEndBy1 parser eol
 
 readInput :: FilePath -> Parser a -> IO a
 readInput path parser = do
