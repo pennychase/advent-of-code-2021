@@ -12,6 +12,11 @@ import Data.Maybe
 type Coord = (Int, Int)
 type Grid = Map Coord Int
 
+data SimState = SimState
+    { grid :: Grid
+    , flashes :: Int 
+    }
+
 newVal :: Int -> Int 
 newVal n =
     if n == 0 then 0 else n + 1
@@ -43,33 +48,65 @@ findNeighbors coord grid =
     mapMaybe (\c -> (c,) <$> M.lookup c grid) (neighbors coord)
 
         
-updateCell :: Coord -> Grid -> Grid
-updateCell coord grid =
-    foldl (\m (k, v) -> M.insert k v m) (M.insert coord 0 grid) xs
-    where 
-        xs = map (newVal <$>) (findNeighbors coord grid)
+updateCell :: Grid -> Coord -> State (Int, Int) Grid
+updateCell grid coord  = do
+    (steps, flashes) <- get
+    let xs = map (newVal <$>) (findNeighbors coord grid)
+    let grid' = foldl (\m (k, v) -> M.insert k v m) (M.insert coord 0 grid) xs
+    put (steps, flashes + 1)
+    pure grid'
 
-step :: Grid -> Grid
-step grid =
-    go addedOne
+
+step :: Grid -> State (Int, Int) Grid
+step grid = do
+    (steps, flashes) <- get
+    put (steps + 1, flashes)
+    go (M.map (+1) grid)
     where
-        addedOne = M.map (+1) grid
+        go :: Grid -> State (Int, Int) Grid
         go g =
-            let
-                nines = M.filter (> 9) g
+            let nines = M.filter (> 9) g
             in
                 if M.null nines 
-                    then g
-                    else go $ foldr updateCell g (M.keys nines)
+                    then pure g
+                    else do
+                        g' <- foldM updateCell g (M.keys nines)
+                        go g'
 
-
-part1 :: Int -> String -> Grid
-part1 n input =
-    (iterate step grid) !! n
+initialize :: String -> Grid
+initialize input = grid
     where
         (nrow, ncol, vals) = parseInput input
         grid = mkGrid nrow ncol vals
-            
+
+solve :: Int -> Grid -> State (Int, Int) Grid
+solve n grid = do
+    if n == 0 then pure grid
+        else do
+            grid' <- step grid
+            solve (n - 1) grid'
+
+solve2 :: Grid -> State (Int, Int) Grid
+solve2 grid = do
+    if allFlash then pure grid
+        else do
+            grid' <- step grid
+            solve2 grid'
+    where
+        allFlash = M.size (M.filter (== 0) grid) == M.size grid
+
+part1 :: String -> (Int, Int)
+part1 input =
+    execState (solve 100 grid) (0, 0)
+    where
+        grid = initialize input
+
+part2 :: String -> (Int, Int)
+part2 input =
+    execState (solve2 grid) (0, 0)
+    where
+        grid = initialize input
+                    
 
 parseInput :: String -> (Int, Int, [Int])
 parseInput input = (nrow, ncol, map digitToInt (concat ls))
@@ -81,7 +118,8 @@ parseInput input = (nrow, ncol, map digitToInt (concat ls))
 main :: IO ()
 main = do
     contents <- readFile "data/day11-input.txt"
-    putStrLn "Part 1: " <> show (part1 contents)
+    putStrLn $ "Part 1: " <> show (part1 contents)
+    putStrLn $ "Part 2: " <> show (part2 contents)
 
 -- Test Data
 testData1 :: String 
