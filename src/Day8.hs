@@ -4,14 +4,19 @@ module Day8 where
 
 import Data.Bits
 import Data.List
+import Data.Map (Map)
+import qualified Data.Map as M
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
-import Data.Fixed (E0)
+
+type Observation = ([Text], [Text])
 
 data Segment = Seg6 | Seg5 | Seg4 | Seg3 | Seg2 | Seg1 | Seg0
     deriving (Show, Eq, Ord, Enum)
 
+-- Part 2
 segToBit :: Segment -> Int
 segToBit = fromEnum
 
@@ -30,12 +35,42 @@ segsToDigit segs =
         0x7B -> Just 9
         _    -> Nothing
 
+charToSegMap :: String -> Map Char Segment
+charToSegMap s = M.fromList $ zip s [Seg6, Seg5 .. ]
 
+strToSegs :: Text -> Map Char Segment -> [Segment]
+strToSegs s m = mapMaybe (\x -> M.lookup x m) (T.unpack s)
 
+strToDigit :: Text -> Map Char Segment -> Maybe Int
+strToDigit s m = segsToDigit (strToSegs s m)
 
+testPermutation :: String -> [Text] -> Maybe (Map Char Segment)
+testPermutation perm xs = 
+    case mapM (flip strToDigit m) xs of
+        Nothing -> Nothing 
+        _       -> pure m
+    where
+        m = charToSegMap perm
 
+testPermutations :: Observation -> Maybe [Int]
+testPermutations obs =
+    go perms
+    where
+        perms = permutations "abcdefg"
+        go [] = Nothing
+        go (p:ps) =
+            case testPermutation p (fst obs) of
+                Nothing -> go ps
+                Just m  -> mapM (flip strToDigit m) (snd obs)
 
-type Observation = ([Text], [Text])
+digitsToInt :: [Int] -> Int 
+digitsToInt ns = foldl' (\ds d -> 10*ds + d) 0 ns
+
+part2 :: [Observation] -> Int
+part2 obs = 
+    sum $ map digitsToInt (mapMaybe testPermutations obs)
+
+-- Part 1
 
 getOutputSegLen :: Observation -> [Int]
 getOutputSegLen  obs = map T.length $ snd obs
@@ -58,6 +93,7 @@ main = do
     contents <- T.readFile "data/day8-input.txt"
     let observations = parseInput contents
     putStrLn $ "Part 1: " <> show (part1 observations)
+    putStrLn $ "Part 2: " <> show (part2 observations)    
 
 -- Data
 sample :: Text
