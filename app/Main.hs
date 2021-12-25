@@ -1,7 +1,7 @@
 module Main where
 
-import qualified Day13
+import qualified Day20
 
 main :: IO ()
 main = do
-  Day13.main
+  Day20.main
