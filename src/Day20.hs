@@ -53,8 +53,8 @@ enhance step alg grid =
         (minX, minY) = fst $ M.findMin grid
         (maxX, maxY) = fst $ M.findMax grid
         borders = [(x,y) | y <- [minY-1 .. maxY+1], x <- [minX-1 .. maxX+1]]
-        val = if even step then '.' else '#'
-        -- val = '.'            -- This is for the test data
+        val = if even step then '.' else alg!0
+
 
 parseInput :: String -> (V.Vector Char, Grid)
 parseInput s = (algorithm, grid)
